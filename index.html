@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>App Cocina</title>
+<meta name="description" content="Despensa, plan de comidas y lista de compras del mes.">
+<meta name="theme-color" content="#2f7d5b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Cocina">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--bg:#f7f4ef;--card:#fff;--ink:#1f1d1a;--mut:#6f6a63;--line:#e7e1d8;--acc:#2f7d5b;--acc-ink:#fff;--acc2:#e6f2ec;--warn:#b45309;--warnbg:#fdf0e1;--bad:#b42318;--badbg:#fdecea;--shadow:0 1px 2px rgba(0,0,0,.06)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#141311;--card:#1e1c19;--ink:#f2efe9;--mut:#a39d94;--line:#33302b;--acc:#5cbf8f;--acc-ink:#0c1f16;--acc2:#1b3127;--warn:#f59e4a;--warnbg:#36250f;--bad:#f87171;--badbg:#3a1a18;--shadow:none}}
+:root[data-theme="dark"]{--bg:#141311;--card:#1e1c19;--ink:#f2efe9;--mut:#a39d94;--line:#33302b;--acc:#5cbf8f;--acc-ink:#0c1f16;--acc2:#1b3127;--warn:#f59e4a;--warnbg:#36250f;--bad:#f87171;--badbg:#3a1a18;--shadow:none}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif}
+body{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+header{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(env(safe-area-inset-top) + 10px) 16px 8px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line)}
+header h1{font-size:22px;margin:0;flex:1;letter-spacing:-.01em}
+main{padding:12px 16px 24px;max-width:720px;margin:0 auto}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs button{flex:1;border:0;background:none;color:var(--mut);padding:8px 0 6px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav.tabs button .i{font-size:21px;line-height:1}
+nav.tabs button.on{color:var(--acc);font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 12px;box-shadow:var(--shadow)}
+.card h2{font-size:15px;margin:0 0 8px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.card h2 a,.link{color:var(--acc);font-weight:500;font-size:14px;text-decoration:none;background:none;border:0;padding:0}
+.mut{color:var(--mut)} .sm{font-size:13px}
+.row{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row .grow{flex:1;min-width:0}
+.row .name{font-weight:500;overflow:hidden;text-overflow:ellipsis}
+.row.dim .name{color:var(--mut);text-decoration:line-through}
+.badge{display:inline-block;font-size:12px;padding:1px 7px;border-radius:999px;background:var(--acc2);color:var(--acc);margin-left:4px;white-space:nowrap}
+.badge.warn{background:var(--warnbg);color:var(--warn)} .badge.bad{background:var(--badbg);color:var(--bad)} .badge.n{background:var(--line);color:var(--mut)}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:9px 14px;font-size:15px;font-weight:500;cursor:pointer}
+.btn.p{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+.btn.d{color:var(--bad)}
+.btn.w{width:100%}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btns .btn{flex:1}
+.ic{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:20px;line-height:1;padding:0;flex:none}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:14px;white-space:nowrap}
+.chip.on{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+input,select,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 10px;width:100%;min-width:0}
+textarea{min-height:90px}
+label.f{display:block;margin:0 0 10px;font-size:13px;color:var(--mut)}
+label.f>input,label.f>select,label.f>textarea,label.f>.uq{margin-top:4px}
+.uq{display:flex;gap:6px}.uq input{flex:2}.uq select{flex:1}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.search{margin-bottom:10px}
+.empty{text-align:center;color:var(--mut);padding:24px 8px}
+.day{display:grid;grid-template-columns:62px 1fr 1fr;gap:6px;margin-bottom:6px;align-items:stretch}
+.day .dl{font-size:13px;color:var(--mut);padding-top:8px;line-height:1.2}
+.day.today .dl{color:var(--acc);font-weight:700}
+.slot{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:7px 8px;text-align:left;font-size:13px;color:var(--ink);min-height:52px;display:flex;flex-direction:column;justify-content:center}
+.slot.e{border-style:dashed;color:var(--mut);background:transparent}
+.slot.ok{background:var(--acc2)}
+.slot.sk{opacity:.55}
+.slot .t{font-size:11px;color:var(--mut)}
+.slot b{font-weight:600;line-height:1.2}
+.wk{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.wk .lbl{flex:1;text-align:center;font-weight:600}
+.chk{width:28px;height:28px;border-radius:8px;border:2px solid var(--line);background:var(--card);flex:none;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--acc-ink);padding:0}
+.chk.on{background:var(--acc);border-color:var(--acc)}
+.cat{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:14px 0 4px}
+.stat{display:flex;gap:10px;margin-bottom:12px}
+.stat>div{flex:1;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.stat b{display:block;font-size:20px}
+.stat span{font-size:12px;color:var(--mut)}
+#sheet{display:none}
+#sheet.on{display:block}
+.sh-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:20}
+.sh{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--bg);border-radius:18px 18px 0 0;max-height:92vh;display:flex;flex-direction:column;max-width:720px;margin:0 auto}
+.sh-h{display:flex;align-items:center;padding:14px 16px 8px;gap:8px}
+.sh-h b{flex:1;font-size:18px}
+.sh-b{padding:4px 16px 12px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.sh-f{padding:10px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap}
+.sh-f .btn{flex:1}
+.x{border:0;background:var(--line);color:var(--ink);width:30px;height:30px;border-radius:50%;font-size:14px;padding:0;flex:none}
+.ing{display:grid;grid-template-columns:1fr 74px 70px 30px;gap:6px;margin-bottom:6px;align-items:center}
+.pk{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:9px 11px;margin-bottom:6px;font-size:15px}
+.pk .sm{display:block;margin-top:2px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:14px;z-index:40;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.on{opacity:1}
+.menu .row{cursor:pointer}
+.banner{background:var(--acc2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px;margin-bottom:12px}
+ol.steps{padding-left:20px;margin:6px 0} ol.steps li{margin-bottom:6px}
+.price{width:96px;text-align:right}
+</style>
+</head>
+<body>
+<header><h1 id="title">Cocina</h1><span id="hdr"></span></header>
+<main id="main"></main>
+<nav class="tabs" id="tabs">
+  <button data-act="nav" data-v="inicio"><span class="i">⌂</span>Inicio</button>
+  <button data-act="nav" data-v="despensa"><span class="i">▤</span>Despensa</button>
+  <button data-act="nav" data-v="plan"><span class="i">▦</span>Plan</button>
+  <button data-act="nav" data-v="lista"><span class="i">☑</span>Lista</button>
+  <button data-act="nav" data-v="mas"><span class="i">⋯</span>Más</button>
+</nav>
+<div id="sheet"></div>
+<div class="toast" id="toast"></div>
+<datalist id="prodlist"></datalist>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+
+<script>
+'use strict';
+/* ============ Constantes y utilidades ============ */
+const CATS=['Frutas y verduras','Carnes y pescados','Lácteos y huevos','Panadería','Abarrotes','Congelados','Bebidas','Limpieza','Aseo personal','Otros'];
+const LOCS={despensa:'Despensa',refri:'Refrigerador',congelador:'Congelador'};
+const UNITS={g:'g',ml:'ml',u:'unid.'};
+const SUB={g:{base:'g',f:1},kg:{base:'g',f:1000},ml:{base:'ml',f:1},L:{base:'ml',f:1000},u:{base:'u',f:1}};
+const SUBS_OF={g:['g','kg'],ml:['ml','L'],u:['u']};
+const SUB_LABEL={g:'g',kg:'kg',ml:'ml',L:'L',u:'unid.'};
+const TYPES={almuerzo:'Almuerzo',cena:'Cena'};
+const DOW=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+const MES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+const $=s=>document.querySelector(s);
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-5);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rnd=n=>Math.round(n*1000)/1000;
+function dstr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function parseD(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
+const todayStr=()=>dstr(new Date());
+function addDays(s,n){const d=parseD(s);d.setDate(d.getDate()+n);return dstr(d)}
+function diffDays(a,b){return Math.round((parseD(a)-parseD(b))/86400000)}
+function monday(s){const d=parseD(s);d.setDate(d.getDate()-((d.getDay()+6)%7));return dstr(d)}
+function fmtDate(s){const d=parseD(s);return DOW[(d.getDay()+6)%7]+' '+d.getDate()+' '+MES[d.getMonth()]}
+function fmtShort(s){const d=parseD(s);return d.getDate()+' '+MES[d.getMonth()]}
+function num(n){return (Math.round(n*100)/100).toLocaleString('es-CL')}
+function fmtQty(q,unit){q=q||0;if(unit==='g'&&q>=1000)return num(q/1000)+' kg';if(unit==='ml'&&q>=1000)return num(q/1000)+' L';return num(q)+' '+UNITS[unit||'u']}
+const clp=n=>'$'+Math.round(n||0).toLocaleString('es-CL');
+function norm(s){return String(s||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').replace(/(.{3,})s$/,'$1')}
+function daysAgoTxt(d){if(d===null)return 'nunca';if(d<=0)return 'hoy';if(d===1)return 'ayer';return 'hace '+d+' días'}
+
+/* ============ Estado y persistencia ============ */
+function emptyState(){return {v:1,products:[],pantry:[],recipes:[],plan:[],lists:[],settings:{serv:null,lastBackup:null,seeded:false}}}
+let S=emptyState();
+const ui={view:'inicio',sub:null,loc:'todo',pq:'',showOut:false,week:monday(todayStr()),rq:'',rtag:'',cq:''};
+let ctx={};
+
+const DB={db:null,
+  open(){return new Promise((res,rej)=>{const r=indexedDB.open('app-cocina',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(this.db=r.result);r.onerror=()=>rej(r.error)})},
+  get(k){return new Promise((res,rej)=>{const t=this.db.transaction('kv').objectStore('kv').get(k);t.onsuccess=()=>res(t.result);t.onerror=()=>rej(t.error)})},
+  set(k,v){return new Promise((res,rej)=>{const tx=this.db.transaction('kv','readwrite');tx.objectStore('kv').put(v,k);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)})}
+};
+async function load(){
+  try{await DB.open();const s=await DB.get('state');if(s)return s}catch(e){DB.db=null}
+  try{const j=localStorage.getItem('app-cocina');if(j)return JSON.parse(j)}catch(e){}
+  return null;
+}
+let saveT=null;
+async function flush(){
+  clearTimeout(saveT);saveT=null;
+  try{if(DB.db)await DB.set('state',JSON.parse(JSON.stringify(S)));else localStorage.setItem('app-cocina',JSON.stringify(S))}
+  catch(e){toast('No se pudo guardar: '+e.message)}
+}
+function save(){clearTimeout(saveT);saveT=setTimeout(flush,200)}
+function commit(){save();render()}
+function migrate(o){
+  const s=Object.assign(emptyState(),o||{});
+  ['products','pantry','recipes','plan','lists'].forEach(k=>{if(!Array.isArray(s[k]))s[k]=[]});
+  s.settings=Object.assign(emptyState().settings,s.settings||{});
+  s.recipes.forEach(r=>{if(!Array.isArray(r.ings))r.ings=[];if(!Array.isArray(r.tags))r.tags=[]});
+  s.lists.forEach(l=>{if(!Array.isArray(l.items))l.items=[]});
+  return s;
+}
+
+/* ============ Consultas ============ */
+const P=id=>S.products.find(p=>p.id===id);
+const R=id=>S.recipes.find(r=>r.id===id);
+const stockOf=pid=>rnd(S.pantry.filter(i=>i.pid===pid).reduce((a,i)=>a+(i.qty||0),0));
+const findProd=name=>{const n=norm(name);return n?S.products.find(p=>norm(p.name)===n):null};
+const openList=()=>S.lists.find(l=>l.status==='abierta');
+function lastCooked(rid){
+  let last=R(rid)?.last||null;
+  S.plan.forEach(m=>{if(m.rid===rid&&m.status==='cocinada'&&(!last||m.date>last))last=m.date});
+  return last;
+}
+function daysSince(rid){const l=lastCooked(rid);return l?diffDays(todayStr(),l):null}
+function expSoon(pid,days){const t=todayStr();return S.pantry.some(i=>i.pid===pid&&i.qty>0&&i.exp&&diffDays(i.exp,t)<=days)}
+function defaultServ(r){return S.settings.serv||r.serv||2}
+function stepOf(p){if(!p||p.unit==='u')return 1;const k=p.pack||0;return k>=1000?250:(k||100)}
+function defaultLoc(cat){return cat==='Congelados'?'congelador':(['Lácteos y huevos','Carnes y pescados'].includes(cat)?'refri':'despensa')}
+function mealAt(date,type){return S.plan.find(m=>m.date===date&&m.type===type)}
+function weekRecipes(ws){const we=addDays(ws,6);return S.plan.filter(m=>m.date>=ws&&m.date<=we&&m.status!=='saltada').map(m=>m.rid)}
+function recipeScore(r,ws){
+  const days=daysSince(r.id);
+  const exp=r.ings.filter(g=>expSoon(g.pid,5));
+  const have=r.ings.length?r.ings.filter(g=>stockOf(g.pid)>=g.qty*defaultServ(r)/(r.serv||1)).length/r.ings.length:0;
+  const times=weekRecipes(ws).filter(x=>x===r.id).length,inWeek=times>0;
+  let s=(days===null?45:Math.min(days,60))+exp.length*30+have*20;
+  if(days!==null&&days<14)s-=100;
+  s-=200*times;
+  return {s,days,exp,inWeek,have};
+}
+
+/* ============ Formularios: cantidades con unidad ============ */
+function pickSub(base,q){if(base==='g'&&q>=1000)return 'kg';if(base==='ml'&&q>=1000)return 'L';return base}
+function subOpts(base,sel){return SUBS_OF[base].map(u=>`<option value="${u}"${u===sel?' selected':''}>${SUB_LABEL[u]}</option>`).join('')}
+function qtyField(name,base,val){
+  const sub=pickSub(base,val||0);const shown=(val===''||val==null)?'':rnd((val||0)/SUB[sub].f);
+  return `<div class="uq"><input name="${name}" type="number" inputmode="decimal" step="any" min="0" value="${shown}"><select name="${name}_u">${subOpts(base,sub)}</select></div>`;
+}
+function readQty(f,name){const el=f.elements[name];if(!el)return 0;const v=parseFloat(String(el.value).replace(',','.'));if(isNaN(v)||v<0)return 0;const u=f.elements[name+'_u']?.value||'u';return rnd(v*SUB[u].f)}
+
+/* ============ UI base ============ */
+let toastT;
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2200)}
+function sheet(title,body,foot=''){
+  $('#sheet').innerHTML=`<div class="sh-bg" data-act="closeSheet"></div><div class="sh" role="dialog" aria-label="${esc(title)}"><div class="sh-h"><b>${esc(title)}</b><button class="x" data-act="closeSheet" aria-label="Cerrar">✕</button></div><div class="sh-b">${body}</div>${foot?`<div class="sh-f">${foot}</div>`:''}</div>`;
+  $('#sheet').classList.add('on');document.body.style.overflow='hidden';
+}
+function ask(msg,yes,fn){sheet('¿Confirmas?',`<p>${esc(msg)}</p>`,`<button class="btn" data-act="closeSheet">Cancelar</button><button class="btn p" data-act="askYes">${esc(yes)}</button>`);ctx={askFn:fn}}
+function closeSheet(){$('#sheet').classList.remove('on');$('#sheet').innerHTML='';document.body.style.overflow='';ctx={}}
+const catOpts=sel=>CATS.map(c=>`<option${c===sel?' selected':''}>${esc(c)}</option>`).join('');
+const locOpts=sel=>Object.entries(LOCS).map(([k,v])=>`<option value="${k}"${k===sel?' selected':''}>${v}</option>`).join('');
+
+/* ============ Render ============ */
+const TITLES={inicio:'Hoy',despensa:'Despensa',plan:'Plan de comidas',lista:'Lista de compra',mas:'Más',recetas:'Recetas',productos:'Productos',ajustes:'Ajustes y respaldo',ayuda:'Instalar y usar'};
+function render(){
+  const a=document.activeElement,aid=a&&a.id,pos=a&&a.selectionStart;
+  const v=ui.sub||ui.view;
+  $('#title').textContent=TITLES[v]||'Cocina';
+  $('#hdr').innerHTML=ui.sub?`<button class="link" data-act="back">‹ Volver</button>`:'';
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===ui.view));
+  $('#prodlist').innerHTML=S.products.map(p=>`<option value="${esc(p.name)}">`).join('');
+  const fn={inicio:vInicio,despensa:vDespensa,plan:vPlan,lista:vLista,mas:vMas,recetas:vRecetas,productos:vProductos,ajustes:vAjustes,ayuda:vAyuda}[v];
+  $('#main').innerHTML=fn();
+  if(aid){const el=document.getElementById(aid);if(el){el.focus();try{el.setSelectionRange(pos,pos)}catch(e){}}}
+}
+
+/* ---------- Inicio ---------- */
+function vInicio(){
+  if(!S.products.length&&!S.settings.seeded){
+    return `<div class="card"><h2>Bienvenido</h2><p class="mut">Puedes partir con datos de ejemplo (unos 60 productos y 11 recetas chilenas) o en blanco. Los ejemplos se pueden editar o borrar.</p>
+    <div class="btns"><button class="btn p" data-act="seed">Cargar ejemplos</button><button class="btn" data-act="blank">Empezar en blanco</button></div></div>${installBanner()}`;
+  }
+  const t=todayStr(),tm=addDays(t,1);
+  const meal=(d,ty)=>{const m=mealAt(d,ty);const r=m&&R(m.rid);
+    return `<div class="row" data-act="slot" data-d="${d}" data-t="${ty}"><div class="grow"><div class="sm mut">${TYPES[ty]}</div><div class="name">${r?esc(r.name):'<span class="mut">Sin planificar</span>'}</div></div>${m&&m.status==='cocinada'?'<span class="badge">cocinada</span>':m&&m.status==='saltada'?'<span class="badge n">saltada</span>':''}<span class="mut">›</span></div>`};
+  const exp=S.pantry.filter(i=>i.qty>0&&i.exp&&diffDays(i.exp,t)<=7).sort((a,b)=>a.exp.localeCompare(b.exp));
+  const low=S.products.filter(p=>p.min>0&&stockOf(p.id)<p.min).sort((a,b)=>a.name.localeCompare(b.name));
+  const ol=openList();
+  let h=installBanner();
+  const lb=S.settings.lastBackup;
+  if(S.products.length&&(!lb||diffDays(t,lb)>14))h+=`<div class="banner">${lb?'Tu último respaldo fue hace '+diffDays(t,lb)+' días.':'Aún no has hecho un respaldo.'} iOS puede borrar datos de apps web poco usadas. <button class="link" data-act="export">Respaldar ahora</button></div>`;
+  h+=`<div class="card"><h2>Hoy · ${fmtDate(t)}<button class="link" data-act="nav" data-v="plan">Plan ›</button></h2>${meal(t,'almuerzo')}${meal(t,'cena')}</div>`;
+  h+=`<div class="card"><h2>Mañana</h2>${meal(tm,'almuerzo')}${meal(tm,'cena')}</div>`;
+  h+=`<div class="card"><h2>Por vencer (7 días)<span class="badge${exp.length?' warn':' n'}">${exp.length}</span></h2>${exp.length?exp.map(i=>{const p=P(i.pid);const d=diffDays(i.exp,t);
+    return `<div class="row" data-act="editItem" data-id="${i.id}"><div class="grow"><div class="name">${esc(p?.name)}</div><div class="sm mut">${fmtQty(i.qty,p?.unit)} · ${LOCS[i.loc]||''}</div></div>${expBadge(d)}</div>`}).join(''):'<div class="sm mut">Nada por vencer.</div>'}</div>`;
+  h+=`<div class="card"><h2>Bajo stock mínimo<span class="badge${low.length?' warn':' n'}">${low.length}</span></h2>${low.length?low.map(p=>`<div class="row" data-act="editProd" data-id="${p.id}"><div class="grow"><div class="name">${esc(p.name)}</div><div class="sm mut">Hay ${fmtQty(stockOf(p.id),p.unit)} · mínimo ${fmtQty(p.min,p.unit)}</div></div></div>`).join(''):'<div class="sm mut">Todo sobre el mínimo.</div>'}</div>`;
+  h+=`<div class="card"><h2>Lista de compra<button class="link" data-act="nav" data-v="lista">Abrir ›</button></h2>${ol?`<div class="sm">${ol.items.filter(i=>i.bought).length} de ${ol.items.length} ítems comprados · ${fmtShort(ol.from)} a ${fmtShort(ol.to)}</div>`:'<div class="sm mut">No hay una lista abierta. Genérala desde el plan.</div>'}</div>`;
+  return h;
+}
+function expBadge(d){if(d<0)return `<span class="badge bad">venció</span>`;if(d===0)return `<span class="badge bad">hoy</span>`;if(d<=3)return `<span class="badge warn">${d} d</span>`;return `<span class="badge${d<=7?' warn':' n'}">${d} d</span>`}
+function installBanner(){
+  const standalone=window.navigator.standalone||matchMedia('(display-mode: standalone)').matches;
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  if(standalone||!ios)return '';
+  return `<div class="banner">Para instalarla: toca <b>Compartir</b> (cuadrado con flecha) y luego <b>Agregar a inicio</b>. <button class="link" data-act="sub" data-v="ayuda">Ver pasos</button></div>`;
+}
+
+/* ---------- Despensa ---------- */
+function vDespensa(){
+  const t=todayStr(),q=norm(ui.pq);
+  let items=S.pantry.filter(i=>(ui.loc==='todo'||i.loc===ui.loc)&&(!q||norm(P(i.pid)?.name).includes(q)));
+  const byExp=(a,b)=>(a.exp||'9999').localeCompare(b.exp||'9999')||(P(a.pid)?.name||'').localeCompare(P(b.pid)?.name||'');
+  const inn=items.filter(i=>i.qty>0).sort(byExp),out=items.filter(i=>!(i.qty>0)).sort(byExp);
+  const chips=[['todo','Todo'],...Object.entries(LOCS)].map(([k,v])=>`<button class="chip${ui.loc===k?' on':''}" data-act="loc" data-v="${k}">${v}</button>`).join('');
+  const row=i=>{const p=P(i.pid);if(!p)return '';const d=i.exp?diffDays(i.exp,t):null;const low=p.min>0&&stockOf(p.id)<p.min;
+    return `<div class="row${i.qty>0?'':' dim'}"><div class="grow" data-act="editItem" data-id="${i.id}"><div class="name">${esc(p.name)}</div><div class="sm mut">${fmtQty(i.qty,p.unit)}${ui.loc==='todo'?' · '+LOCS[i.loc]:''}${low?' · <span style="color:var(--warn)">bajo mínimo</span>':''}</div></div>${d!==null&&i.qty>0?expBadge(d):''}
+    <button class="ic" data-act="dec" data-id="${i.id}" aria-label="Menos">−</button><button class="ic" data-act="inc" data-id="${i.id}" aria-label="Más">+</button>${i.qty>0?`<button class="ic" data-act="out" data-id="${i.id}" aria-label="Se acabó" title="Se acabó" style="font-size:13px">0</button>`:''}</div>`};
+  return `<div class="btns" style="margin-bottom:10px"><button class="btn p" data-act="newItem">+ Agregar a despensa</button></div>
+  <input class="search" id="pq" data-in="pq" type="search" placeholder="Buscar producto" value="${esc(ui.pq)}">
+  <div class="chips">${chips}</div>
+  <div class="card">${inn.length?inn.map(row).join(''):'<div class="empty">Nada aquí todavía.</div>'}</div>
+  ${out.length?`<button class="link" data-act="toggleOut">${ui.showOut?'Ocultar':'Ver'} agotados (${out.length})</button>${ui.showOut?`<div class="card" style="margin-top:8px">${out.map(row).join('')}</div>`:''}`:''}
+  <p class="sm mut">Los botones − y + ajustan por formato (unidad, 100 g o 250 g según el producto). El “0” marca que se acabó. Toca el nombre para editar cantidad exacta y vencimiento.</p>`;
+}
+
+/* ---------- Plan ---------- */
+function vPlan(){
+  const ws=ui.week,t=todayStr();
+  const wr=weekRecipes(ws);const cnt={};wr.forEach(r=>cnt[r]=(cnt[r]||0)+1);
+  let h=`<div class="wk"><button class="ic" data-act="wk" data-n="-7">‹</button><div class="lbl">${fmtShort(ws)} – ${fmtShort(addDays(ws,6))}</div><button class="ic" data-act="wk" data-n="7">›</button></div>
+  <div class="btns" style="margin-bottom:12px"><button class="btn p" data-act="suggest">Sugerir semana</button>${ws!==monday(t)?'<button class="btn" data-act="wk" data-n="0">Ir a hoy</button>':''}</div>
+  <div class="day" style="margin-bottom:2px"><div></div><div class="sm mut">Almuerzo</div><div class="sm mut">Cena</div></div>`;
+  for(let k=0;k<7;k++){
+    const d=addDays(ws,k);
+    h+=`<div class="day${d===t?' today':''}"><div class="dl">${DOW[k]}<br>${parseD(d).getDate()}</div>`;
+    for(const ty of ['almuerzo','cena']){
+      const m=mealAt(d,ty),r=m&&R(m.rid);
+      if(!r){h+=`<button class="slot e" data-act="slot" data-d="${d}" data-t="${ty}">+ agregar</button>`;continue}
+      const rep=cnt[r.id]>1&&m.status!=='saltada';
+      h+=`<button class="slot${m.status==='cocinada'?' ok':''}${m.status==='saltada'?' sk':''}" data-act="slot" data-d="${d}" data-t="${ty}"><b>${esc(r.name)}</b><span class="t">${m.serv} porc.${m.status==='cocinada'?' · ✓ cocinada':''}${m.status==='saltada'?' · saltada':''}${rep?' · <span style="color:var(--warn)">se repite</span>':''}</span></button>`;
+    }
+    h+='</div>';
+  }
+  const n=S.plan.filter(m=>m.date>=ws&&m.date<=addDays(ws,6)&&m.status==='planificada').length;
+  h+=`<p class="sm mut">${n} comidas planificadas esta semana. “Sugerir” llena los espacios vacíos desde hoy con recetas que no has hecho en 14 días o más, priorizando las que usan productos por vencer. Marcar como cocinada descuenta los ingredientes de la despensa.</p>`;
+  return h;
+}
+
+/* ---------- Lista ---------- */
+function vLista(){
+  const ol=openList();
+  if(!ol){
+    const from=ui.lfrom||todayStr(),w=ui.lweeks||4,to=addDays(from,w*7-1);
+    const n=S.plan.filter(m=>m.status==='planificada'&&m.date>=from&&m.date<=to).length;
+    const closed=S.lists.filter(l=>l.status==='cerrada').sort((a,b)=>(b.closed||'').localeCompare(a.closed||''));
+    return `<div class="card"><h2>Generar lista del mes</h2>
+    <div class="g2"><label class="f">Desde<input type="date" id="lfrom" value="${from}" data-ch="lfrom"></label>
+    <label class="f">Semanas<select id="lweeks" data-ch="lweeks">${[1,2,3,4,5,6].map(k=>`<option${k===w?' selected':''}>${k}</option>`).join('')}</select></label></div>
+    <p class="sm mut">Rango: ${fmtShort(from)} a ${fmtShort(to)}. Hay <b>${n}</b> comidas planificadas en ese rango. La lista suma sus ingredientes, repone lo que esté bajo el stock mínimo y descuenta lo que ya hay en la despensa.${n<w*7?' Si planificas más comidas antes de generar, la lista sale más completa.':''}</p>
+    <button class="btn p w" data-act="genList">Generar lista</button></div>
+    <div class="btns" style="margin-bottom:12px"><button class="btn" data-act="emptyList">Lista vacía (solo manual)</button></div>
+    ${closed.length?`<div class="card"><h2>Compras anteriores</h2>${closed.map(l=>`<div class="row"><div class="grow"><div class="name">${fmtShort(l.closed||l.created)}</div><div class="sm mut">${l.items.filter(i=>i.bought).length} ítems comprados</div></div><b>${clp(l.total)}</b></div>`).join('')}</div>`:''}`;
+  }
+  const bought=ol.items.filter(i=>i.bought).length;
+  const total=ol.items.reduce((a,i)=>a+(i.bought&&i.price>0?i.price:0),0);
+  const est=ol.items.reduce((a,i)=>a+(i.price>0?i.price:estPrice(i)),0);
+  let h=`<div class="stat"><div><b>${bought}/${ol.items.length}</b><span>comprados</span></div><div><b>${clp(total)}</b><span>gastado</span></div><div><b>${est?clp(est):'—'}</b><span>estimado total</span></div></div>
+  <div class="btns" style="margin-bottom:6px"><button class="btn" data-act="addLItem">+ Ítem</button><button class="btn p" data-act="closeList">Cerrar compra</button></div>
+  <p class="sm mut" style="margin:4px 0 0">${fmtShort(ol.from)} a ${fmtShort(ol.to)} · toca el cuadro al echarlo al carro, el nombre para editar cantidad o precio.</p>`;
+  if(!ol.items.length)h+='<div class="empty">La lista está vacía. Agrega ítems con “+ Ítem”.</div>';
+  for(const c of CATS){
+    const its=ol.items.filter(i=>(P(i.pid)?.cat||'Otros')===c);
+    if(!its.length)continue;
+    its.sort((a,b)=>(a.bought-b.bought)||(P(a.pid)?.name||'').localeCompare(P(b.pid)?.name||''));
+    h+=`<div class="cat">${esc(c)}</div><div class="card" style="padding:4px 14px">${its.map(i=>{const p=P(i.pid);
+      return `<div class="row${i.bought?' dim':''}"><button class="chk${i.bought?' on':''}" data-act="buy" data-id="${i.id}" aria-label="Comprado">${i.bought?'✓':''}</button><div class="grow" data-act="editLItem" data-id="${i.id}"><div class="name">${esc(p?.name||'¿?')}</div><div class="sm mut">${fmtQty(i.qty,p?.unit)} <span class="badge n">${i.origin==='plan'?'plan':i.origin==='minimo'?'mínimo':'manual'}</span></div></div><span class="sm${i.price>0?'':' mut'}">${i.price>0?clp(i.price):(estPrice(i)?'~'+clp(estPrice(i)):'')}</span></div>`}).join('')}</div>`;
+  }
+  h+=`<p style="margin-top:16px"><button class="link" style="color:var(--bad)" data-act="discardList">Descartar esta lista</button></p>`;
+  return h;
+}
+function estPrice(i){const p=P(i.pid);if(!p||!p.price)return 0;return Math.round(p.pack?p.price*i.qty/p.pack:p.price)}
+
+/* ---------- Más ---------- */
+function vMas(){
+  const it=(v,t,s)=>`<div class="row" data-act="sub" data-v="${v}"><div class="grow"><div class="name">${t}</div><div class="sm mut">${s}</div></div><span class="mut">›</span></div>`;
+  return `<div class="card menu">${it('recetas','Recetas',S.recipes.length+' recetas')}${it('productos','Productos',S.products.length+' en el catálogo')}${it('ajustes','Ajustes y respaldo','Exportar, importar, datos de ejemplo')}${it('ayuda','Instalar y usar','Cómo agregarla al iPhone')}</div>
+  <p class="sm mut">Prototipo v1 · los datos se guardan solo en este teléfono.</p>`;
+}
+function vRecetas(){
+  const q=norm(ui.rq);const tags=[...new Set(S.recipes.flatMap(r=>r.tags))].sort();
+  const rs=S.recipes.filter(r=>(!q||norm(r.name).includes(q))&&(!ui.rtag||r.tags.includes(ui.rtag))).sort((a,b)=>a.name.localeCompare(b.name));
+  return `<div class="btns" style="margin-bottom:10px"><button class="btn p" data-act="editRecipe">+ Nueva receta</button></div>
+  <input class="search" id="rq" data-in="rq" type="search" placeholder="Buscar receta" value="${esc(ui.rq)}">
+  ${tags.length?`<div class="chips"><button class="chip${!ui.rtag?' on':''}" data-act="rtag" data-v="">Todas</button>${tags.map(t=>`<button class="chip${ui.rtag===t?' on':''}" data-act="rtag" data-v="${esc(t)}">${esc(t)}</button>`).join('')}</div>`:''}
+  <div class="card">${rs.length?rs.map(r=>{const d=daysSince(r.id);return `<div class="row" data-act="editRecipe" data-id="${r.id}"><div class="grow"><div class="name">${esc(r.name)}</div><div class="sm mut">${daysAgoTxt(d)} · ${r.ings.length} ingredientes · ${r.serv} porc.</div><div>${r.tags.map(t=>`<span class="badge n" style="margin:2px 4px 0 0">${esc(t)}</span>`).join('')}</div></div><span class="mut">›</span></div>`}).join(''):'<div class="empty">No hay recetas.</div>'}</div>`;
+}
+function vProductos(){
+  const q=norm(ui.cq);
+  let h=`<div class="btns" style="margin-bottom:10px"><button class="btn p" data-act="newProd">+ Nuevo producto</button></div><input class="search" id="cq" data-in="cq" type="search" placeholder="Buscar producto" value="${esc(ui.cq)}">`;
+  for(const c of CATS){
+    const ps=S.products.filter(p=>p.cat===c&&(!q||norm(p.name).includes(q))).sort((a,b)=>a.name.localeCompare(b.name));
+    if(!ps.length)continue;
+    h+=`<div class="cat">${esc(c)}</div><div class="card" style="padding:4px 14px">${ps.map(p=>`<div class="row" data-act="editProd" data-id="${p.id}"><div class="grow"><div class="name">${esc(p.name)}</div><div class="sm mut">Stock ${fmtQty(stockOf(p.id),p.unit)}${p.min?' · mín. '+fmtQty(p.min,p.unit):''}${p.price?' · '+clp(p.price)+(p.pack?' / '+fmtQty(p.pack,p.unit):''):''}</div></div><span class="mut">›</span></div>`).join('')}</div>`;
+  }
+  if(!S.products.length)h+='<div class="empty">El catálogo está vacío.</div>';
+  return h;
+}
+function vAjustes(){
+  const lb=S.settings.lastBackup;
+  return `<div class="card"><h2>Respaldo</h2><p class="sm mut">Los datos viven solo en este teléfono. Exporta un respaldo cada una o dos semanas y guárdalo en Archivos o iCloud Drive. Último respaldo: <b>${lb?fmtDate(lb):'nunca'}</b>.</p>
+  <div class="btns"><button class="btn p" data-act="export">Exportar respaldo</button><button class="btn" data-act="import">Importar respaldo</button></div></div>
+  <div class="card"><h2>Porciones por defecto</h2><p class="sm mut">Al agregar una receta al plan se usa este número. Vacío = las porciones de cada receta.</p>
+  <input type="number" inputmode="numeric" min="1" id="defserv" data-ch="defserv" value="${S.settings.serv||''}" placeholder="Usar las de la receta"></div>
+  <div class="card"><h2>Datos</h2><p class="sm mut">${S.products.length} productos · ${S.pantry.length} ítems en despensa · ${S.recipes.length} recetas · ${S.plan.length} comidas en el plan · ${S.lists.length} listas.</p>
+  <div class="btns"><button class="btn" data-act="seed">Cargar ejemplos</button><button class="btn d" data-act="wipe">Borrar todo</button></div></div>`;
+}
+function vAyuda(){
+  return `<div class="card"><h2>Instalar en el iPhone</h2><ol class="steps">
+  <li>Abre este link en <b>Safari</b> (no en Chrome ni dentro de otra app).</li>
+  <li>Toca el botón <b>Compartir</b> (cuadrado con flecha hacia arriba, abajo al centro).</li>
+  <li>Baja y toca <b>Agregar a inicio</b>, luego <b>Agregar</b>.</li>
+  <li>Abre la app desde el ícono “Cocina” de tu pantalla de inicio. Desde ahí funciona sin internet.</li></ol>
+  <p class="sm mut">Importante: los datos de la app instalada y los de Safari son distintos. Usa siempre el ícono.</p></div>
+  <div class="card"><h2>Flujo sugerido</h2><ol class="steps">
+  <li><b>Despensa</b>: revisa los ejemplos, borra lo que no tengas y ajusta cantidades.</li>
+  <li><b>Plan</b>: toca “Sugerir semana” y cambia lo que no te guste. Repite para 4 semanas.</li>
+  <li><b>Lista</b>: genera la lista del mes y llévala al supermercado; marca lo que echas al carro y anota precios si quieres.</li>
+  <li>Al terminar, “Cerrar compra” suma lo comprado a la despensa.</li>
+  <li>Durante el mes, marca cada comida como cocinada para descontar ingredientes.</li></ol></div>`;
+}
+
+/* ============ Hojas (formularios) ============ */
+function sheetProduct({pid=null,iid=null,withItem=true,presetName=''}={}){
+  const p=pid?P(pid):null;const it=iid?S.pantry.find(i=>i.id===iid):null;
+  const unit=p?.unit||'u';
+  ctx={type:'product',pid:p?.id||null,iid:it?.id||null,withItem};
+  const body=`<form id="sf" onsubmit="return false">
+  <label class="f">Nombre<input name="name" ${p?'':'list="prodlist" data-ch="pickProdName"'} value="${esc(p?.name||presetName)}" placeholder="Ej: Arroz" autocomplete="off"></label>
+  <div class="g2"><label class="f">Categoría<select name="cat">${catOpts(p?.cat||'Abarrotes')}</select></label>
+  <label class="f">Se mide en<select name="unit" data-ch="unitChange"><option value="g"${unit==='g'?' selected':''}>peso (g/kg)</option><option value="ml"${unit==='ml'?' selected':''}>volumen (ml/L)</option><option value="u"${unit==='u'?' selected':''}>unidades</option></select></label></div>
+  ${withItem?`<label class="f">Cantidad que hay${qtyField('qty',unit,it?it.qty:(p?.pack||''))}</label>
+  <div class="g2"><label class="f">Ubicación<select name="loc">${locOpts(it?.loc||defaultLoc(p?.cat||'Abarrotes'))}</select></label>
+  <label class="f">Vence (opcional)<input type="date" name="exp" value="${it?.exp||''}"></label></div>`:`<p class="sm">Stock total: <b>${p?fmtQty(stockOf(p.id),p.unit):'—'}</b></p>`}
+  <div class="g2"><label class="f">Stock mínimo${qtyField('min',unit,p?.min||'')}</label>
+  <label class="f">Formato de compra${qtyField('pack',unit,p?.pack||'')}</label></div>
+  <label class="f">Último precio del formato (CLP)<input name="price" type="number" inputmode="numeric" min="0" value="${p?.price||''}"></label>
+  <p class="sm mut">Stock mínimo: bajo esa cantidad entra a la lista aunque no esté en el plan. Formato de compra: cómo lo vendes (ej. arroz 1 kg); la lista redondea a formatos completos.</p></form>`;
+  let foot=`<button class="btn p" data-act="saveProduct">Guardar</button>`;
+  if(it)foot+=`<button class="btn d" data-act="delItem">Quitar de despensa</button>`;
+  if(p&&!withItem)foot+=`<button class="btn" data-act="prodToPantry">Agregar a despensa</button><button class="btn d" data-act="delProd">Eliminar</button>`;
+  sheet(it?'Editar producto':(p&&!withItem?'Producto':'Agregar a despensa'),body,foot);
+}
+function sheetRecipe(rid){
+  const r=rid?R(rid):null;ctx={type:'recipe',rid:r?.id||null};
+  const rows=(r&&r.ings.length?r.ings.map(g=>{const p=P(g.pid);return ingRow(p?.name||'',g.qty,p?.unit||'u')}).join(''):ingRow()+ingRow()+ingRow());
+  const d=r?daysSince(r.id):null;
+  const body=`<form id="sf" onsubmit="return false">
+  <label class="f">Nombre<input name="name" value="${esc(r?.name||'')}" placeholder="Ej: Cazuela de vacuno"></label>
+  <div class="g2"><label class="f">Porciones<input name="serv" type="number" inputmode="numeric" min="1" value="${r?.serv||4}"></label>
+  <label class="f">Etiquetas<input name="tags" value="${esc((r?.tags||[]).join(', '))}" placeholder="rápida, pescado"></label></div>
+  <div class="f sm mut" style="margin-bottom:6px">Ingredientes (para las porciones indicadas)</div>
+  <div id="ings">${rows}</div>
+  <button type="button" class="link" data-act="addIng" style="margin:4px 0 12px">+ ingrediente</button>
+  <label class="f">Preparación (opcional)<textarea name="steps">${esc(r?.steps||'')}</textarea></label>
+  ${r?`<p class="sm mut">Última vez cocinada: ${daysAgoTxt(d)}.</p>`:''}</form>`;
+  sheet(r?'Receta':'Nueva receta',body,`<button class="btn p" data-act="saveRecipe">Guardar</button>${r?'<button class="btn d" data-act="delRecipe">Eliminar</button>':''}`);
+}
+function ingRow(name='',qty='',unit='g'){
+  const sub=pickSub(unit,qty||0);const shown=qty===''?'':rnd(qty/SUB[sub].f);
+  return `<div class="ing"><input class="in-n" list="prodlist" placeholder="Producto" value="${esc(name)}" autocomplete="off"><input class="in-q" type="number" inputmode="decimal" step="any" min="0" placeholder="Cant." value="${shown}"><select class="in-u">${['g','kg','ml','L','u'].map(u=>`<option value="${u}"${u===sub?' selected':''}>${SUB_LABEL[u]}</option>`).join('')}</select><button type="button" class="x" data-act="rmIng" aria-label="Quitar">✕</button></div>`;
+}
+function sheetPick(date,type,mid){
+  ctx={type:'pick',date,ty:type,mid:mid||null};
+  const ws=monday(date);
+  const list=S.recipes.map(r=>({r,...recipeScore(r,ws)})).sort((a,b)=>b.s-a.s);
+  const body=`<input id="pickq" type="search" placeholder="Buscar receta" class="search" autocomplete="off">
+  ${list.length?list.map(x=>`<button class="pk" data-act="pick" data-id="${x.r.id}" data-n="${esc(norm(x.r.name))}"><b>${esc(x.r.name)}</b>
+  <span class="sm mut">${daysAgoTxt(x.days)}${x.inWeek?' · <span style="color:var(--warn)">ya está esta semana</span>':''}${x.days!==null&&x.days<14&&!x.inWeek?' · <span style="color:var(--warn)">reciente</span>':''}${x.exp.length?' · usa por vencer: '+x.exp.map(g=>esc(P(g.pid)?.name)).join(', '):''}${x.r.tags.length?' · '+x.r.tags.map(esc).join(', '):''}</span></button>`).join(''):'<div class="empty">No hay recetas. Créalas en Más › Recetas.</div>'}`;
+  sheet(`${TYPES[type]} · ${fmtDate(date)}`,body,`<button class="btn" data-act="newRecipeFromPick">+ Nueva receta</button>`);
+}
+function sheetMeal(mid){
+  const m=S.plan.find(x=>x.id===mid);if(!m)return;const r=R(m.rid);ctx={type:'meal',mid};
+  const f=r?m.serv/(r.serv||1):1;
+  const ings=r?r.ings.map(g=>{const p=P(g.pid);const need=rnd(g.qty*f);const st=stockOf(g.pid);const ok=st>=need-1e-9;
+    return `<div class="row"><div class="grow"><div class="name">${esc(p?.name)}</div><div class="sm mut">${fmtQty(need,p?.unit)}</div></div>${m.status==='planificada'?(ok?'<span class="badge">hay</span>':`<span class="badge warn">hay ${fmtQty(st,p?.unit)}</span>`):''}</div>`}).join(''):'';
+  const body=`<p class="sm mut" style="margin-top:0">${TYPES[m.type]} · ${fmtDate(m.date)}${m.status!=='planificada'?' · <b>'+m.status+'</b>':''}</p>
+  <div class="card"><h2>${esc(r?.name||'Receta eliminada')}</h2>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><span class="grow sm">Porciones</span><button class="ic" data-act="serv" data-n="-1" ${m.status==='cocinada'?'disabled':''}>−</button><b>${m.serv}</b><button class="ic" data-act="serv" data-n="1" ${m.status==='cocinada'?'disabled':''}>+</button></div>
+  ${ings}</div>${r?.steps?`<div class="card"><h2>Preparación</h2><div class="sm" style="white-space:pre-wrap">${esc(r.steps)}</div></div>`:''}`;
+  let foot='';
+  if(m.status==='planificada')foot=`<button class="btn p" data-act="cook">Cocinada</button><button class="btn" data-act="skip">Saltada</button><button class="btn" data-act="change">Cambiar</button><button class="btn d" data-act="rmMeal">Quitar</button>`;
+  else if(m.status==='cocinada')foot=`<button class="btn" data-act="uncook">Deshacer “cocinada”</button>`;
+  else foot=`<button class="btn" data-act="unskip">Volver a planificar</button><button class="btn d" data-act="rmMeal">Quitar</button>`;
+  sheet('Comida',body,foot);
+}
+function sheetLItem(id){
+  const ol=openList();const i=ol?.items.find(x=>x.id===id);if(!i)return;const p=P(i.pid);ctx={type:'litem',id};
+  const body=`<form id="sf" onsubmit="return false"><p style="margin-top:0"><b>${esc(p?.name)}</b> <span class="sm mut">${esc(p?.cat||'')}</span></p>
+  <label class="f">Cantidad a comprar${qtyField('qty',p?.unit||'u',i.qty)}</label>
+  <label class="f">Precio pagado (CLP, total del ítem)<input name="price" type="number" inputmode="numeric" min="0" value="${i.price||''}" placeholder="${estPrice(i)?'Estimado '+clp(estPrice(i)):''}"></label></form>`;
+  sheet('Ítem de la lista',body,`<button class="btn p" data-act="saveLItem">Guardar</button><button class="btn d" data-act="delLItem">Quitar de la lista</button>`);
+}
+function sheetAddLItem(){
+  ctx={type:'addl'};
+  const body=`<form id="sf" onsubmit="return false"><label class="f">Producto<input name="name" list="prodlist" autocomplete="off" placeholder="Ej: Detergente" data-ch="addlName"></label>
+  <label class="f">Cantidad<div class="uq"><input name="qty" type="number" inputmode="decimal" step="any" min="0" value="1"><select name="qty_u">${['u','g','kg','ml','L'].map(u=>`<option value="${u}">${SUB_LABEL[u]}</option>`).join('')}</select></div></label>
+  <label class="f">Categoría (si es un producto nuevo)<select name="cat">${catOpts('Otros')}</select></label></form>`;
+  sheet('Agregar ítem',body,`<button class="btn p" data-act="saveAddL">Agregar</button>`);
+}
+
+/* ============ Lógica de dominio ============ */
+function cookMeal(m){
+  const r=R(m.rid);if(!r)return [];
+  const f=m.serv/(r.serv||1),used=[],missing=[];
+  for(const g of r.ings){
+    let need=g.qty*f;
+    const items=S.pantry.filter(i=>i.pid===g.pid&&i.qty>0).sort((a,b)=>(a.exp||'9999').localeCompare(b.exp||'9999'));
+    for(const it of items){if(need<=1e-9)break;const take=Math.min(it.qty,need);it.qty=rnd(it.qty-take);it.upd=Date.now();need-=take;used.push({iid:it.id,q:rnd(take)})}
+    if(need>1e-6)missing.push(P(g.pid)?.name);
+  }
+  m.status='cocinada';m.used=used;
+  return missing;
+}
+function uncookMeal(m){
+  for(const u of m.used||[]){const it=S.pantry.find(i=>i.id===u.iid);if(it)it.qty=rnd(it.qty+u.q)}
+  m.used=null;m.status='planificada';
+}
+function suggestWeek(){
+  const ws=ui.week,t=todayStr();let n=0;
+  if(!S.recipes.length){toast('Primero crea recetas');return}
+  for(let k=0;k<7;k++){
+    const d=addDays(ws,k);if(d<t)continue;
+    for(const ty of ['almuerzo','cena']){
+      if(mealAt(d,ty))continue;
+      const best=S.recipes.map(r=>({r,...recipeScore(r,ws)})).sort((a,b)=>b.s-a.s)[0];
+      if(!best)continue;
+      S.plan.push({id:uid(),date:d,type:ty,rid:best.r.id,serv:defaultServ(best.r),status:'planificada'});n++;
+    }
+  }
+  commit();toast(n?`${n} comidas sugeridas. Toca una para cambiarla.`:'No quedan espacios vacíos desde hoy');
+}
+function generateList(from,weeks){
+  const to=addDays(from,weeks*7-1),need={},origin={};
+  S.plan.filter(m=>m.status==='planificada'&&m.date>=from&&m.date<=to).forEach(m=>{const r=R(m.rid);if(!r)return;const f=m.serv/(r.serv||1);
+    r.ings.forEach(g=>{need[g.pid]=(need[g.pid]||0)+g.qty*f;origin[g.pid]='plan'})});
+  S.products.forEach(p=>{if(p.min>0){need[p.id]=(need[p.id]||0)+p.min;if(!origin[p.id])origin[p.id]='minimo'}});
+  const items=[];
+  for(const pid in need){
+    const p=P(pid);if(!p)continue;
+    let q=need[pid]-stockOf(pid);
+    if(q<=1e-6)continue;
+    if(p.pack>0)q=Math.ceil(q/p.pack-1e-9)*p.pack;else if(p.unit==='u')q=Math.ceil(q-1e-9);else q=Math.ceil(q);
+    items.push({id:uid(),pid,qty:rnd(q),origin:origin[pid],bought:false,price:0});
+  }
+  const l={id:uid(),created:todayStr(),from,to,status:'abierta',total:0,items};
+  S.lists.push(l);return l;
+}
+function closeListNow(){
+  const ol=openList();if(!ol)return;
+  let n=0;
+  for(const i of ol.items.filter(x=>x.bought)){
+    const p=P(i.pid);if(!p)continue;
+    const loc=defaultLoc(p.cat);
+    let it=S.pantry.find(x=>x.pid===p.id&&x.loc===loc)||S.pantry.find(x=>x.pid===p.id);
+    if(it){it.qty=rnd((it.qty||0)+i.qty);it.upd=Date.now()}
+    else S.pantry.push({id:uid(),pid:p.id,qty:i.qty,loc,exp:null,upd:Date.now()});
+    if(i.price>0)p.price=Math.round(p.pack?i.price*p.pack/i.qty:i.price);
+    n++;
+  }
+  ol.total=ol.items.reduce((a,i)=>a+(i.bought&&i.price>0?i.price:0),0);
+  ol.status='cerrada';ol.closed=todayStr();
+  return n;
+}
+function ensureProduct(name,base,cat){
+  let p=findProd(name);
+  if(p)return p;
+  p={id:uid(),name:name.trim().replace(/^./,c=>c.toUpperCase()),cat:cat||'Otros',unit:base,min:0,pack:0,price:0};
+  S.products.push(p);return p;
+}
+
+/* ============ Respaldo ============ */
+async function exportData(){
+  const name='app-cocina-respaldo-'+todayStr()+'.json';
+  S.settings.lastBackup=todayStr();
+  const blob=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});
+  let done=false;
+  try{
+    const file=new File([blob],name,{type:'application/json'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:name});done=true}
+  }catch(e){if(e&&e.name==='AbortError'){S.settings.lastBackup=null;save();return}}
+  if(!done){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
+  commit();toast('Respaldo exportado');
+}
+function importData(file){
+  const rd=new FileReader();
+  rd.onload=()=>{try{
+    const o=JSON.parse(rd.result);
+    if(!o||!Array.isArray(o.products))throw new Error('no parece un respaldo de App Cocina');
+    ask(`Esto reemplaza todos los datos actuales por el respaldo (${o.products.length} productos, ${(o.recipes||[]).length} recetas).`,'Importar',()=>{S=migrate(o);S.settings.seeded=true;commit();toast('Respaldo importado')});
+  }catch(e){toast('No se pudo importar: '+e.message)}};
+  rd.readAsText(file);
+}
+
+/* ============ Datos de ejemplo ============ */
+function seedData(){
+  // [nombre, categoría, unidad, mínimo, formato, precio por formato]
+  const prods=[
+    ['Tomate','Frutas y verduras','g',0,1000,1990],['Cebolla','Frutas y verduras','g',500,1000,1290],['Papa','Frutas y verduras','g',0,2000,2490],
+    ['Zanahoria','Frutas y verduras','g',0,1000,990],['Zapallo camote','Frutas y verduras','g',0,1000,1290],['Zapallo italiano','Frutas y verduras','u',0,1,590],
+    ['Lechuga','Frutas y verduras','u',0,1,990],['Limón','Frutas y verduras','g',0,1000,1990],['Ajo','Frutas y verduras','u',1,1,450],
+    ['Cilantro','Frutas y verduras','u',0,1,600],['Pimentón','Frutas y verduras','u',0,1,790],['Palta','Frutas y verduras','g',0,1000,4990],
+    ['Plátano','Frutas y verduras','g',1000,1000,1290],['Manzana','Frutas y verduras','g',1000,1000,1490],['Porotos verdes','Frutas y verduras','g',0,500,1490],
+    ['Albahaca','Frutas y verduras','u',0,1,1200],
+    ['Carne de vacuno para cazuela','Carnes y pescados','g',0,1000,8990],['Carne molida','Carnes y pescados','g',0,500,4490],
+    ['Trutro de pollo','Carnes y pescados','g',0,1000,3990],['Pechuga de pollo','Carnes y pescados','g',0,1000,5990],['Salmón','Carnes y pescados','g',0,500,7990],
+    ['Leche','Lácteos y huevos','ml',2000,1000,1090],['Huevos','Lácteos y huevos','u',6,12,3490],['Mantequilla','Lácteos y huevos','g',0,250,2690],
+    ['Queso laminado','Lácteos y huevos','g',0,250,2990],['Yogur','Lácteos y huevos','u',4,1,450],['Crema','Lácteos y huevos','ml',0,200,990],
+    ['Marraqueta','Panadería','g',0,1000,2690],['Pan de molde','Panadería','u',0,1,2490],
+    ['Arroz','Abarrotes','g',1000,1000,1590],['Tallarines','Abarrotes','g',400,400,990],['Lentejas','Abarrotes','g',0,1000,2190],
+    ['Porotos','Abarrotes','g',0,1000,2490],['Aceite','Abarrotes','ml',1000,1000,3290],['Sal','Abarrotes','g',500,1000,590],
+    ['Azúcar','Abarrotes','g',1000,1000,1290],['Harina','Abarrotes','g',1000,1000,1190],['Salsa de tomate','Abarrotes','g',400,200,590],
+    ['Comino','Abarrotes','u',1,1,500],['Orégano','Abarrotes','u',1,1,500],['Merkén','Abarrotes','u',0,1,900],['Caldo en cubos','Abarrotes','u',0,1,1290],
+    ['Café','Abarrotes','g',170,170,5990],['Té','Abarrotes','u',1,1,2490],['Avena','Abarrotes','g',0,800,2290],['Mayonesa','Abarrotes','g',0,400,2190],
+    ['Pan rallado','Abarrotes','g',0,500,1390],
+    ['Choclo congelado','Congelados','g',0,500,1990],['Arvejas congeladas','Congelados','g',0,500,1490],['Merluza','Congelados','g',0,500,4990],
+    ['Agua mineral','Bebidas','ml',0,1600,990],
+    ['Lavalozas','Limpieza','ml',750,750,1990],['Detergente','Limpieza','ml',0,3000,8990],['Papel higiénico','Limpieza','u',6,12,5990],
+    ['Toalla de papel','Limpieza','u',1,2,2990],['Bolsas de basura','Limpieza','u',1,1,1990],['Cloro','Limpieza','ml',1000,1000,1290],
+    ['Shampoo','Aseo personal','ml',0,400,3990],['Pasta de dientes','Aseo personal','u',1,1,1990],['Jabón','Aseo personal','u',2,3,2490]
+  ];
+  const s=emptyState();const id={};
+  prods.forEach(([name,cat,unit,min,pack,price])=>{const p={id:uid(),name,cat,unit,min,pack,price};s.products.push(p);id[name]=p.id});
+  const t=todayStr();
+  // [producto, cantidad, ubicación, días al vencimiento]
+  [['Arroz',1500,'despensa'],['Tallarines',400,'despensa'],['Lentejas',500,'despensa'],['Porotos',1000,'despensa'],['Aceite',600,'despensa'],
+   ['Sal',900,'despensa'],['Azúcar',800,'despensa'],['Harina',300,'despensa'],['Salsa de tomate',200,'despensa'],['Café',100,'despensa'],['Té',1,'despensa'],
+   ['Comino',1,'despensa'],['Orégano',1,'despensa'],['Caldo en cubos',1,'despensa'],
+   ['Leche',2000,'refri',20],['Huevos',8,'refri',12],['Mantequilla',200,'refri',30],['Queso laminado',150,'refri',4],['Yogur',2,'refri',6],
+   ['Tomate',600,'refri',3],['Cebolla',1000,'despensa'],['Papa',1500,'despensa'],['Zanahoria',500,'refri',6],['Zapallo camote',600,'refri',2],
+   ['Lechuga',1,'refri',2],['Limón',300,'refri',10],['Ajo',1,'despensa'],['Cilantro',1,'refri',3],['Plátano',600,'despensa',3],
+   ['Carne molida',500,'congelador',60],['Trutro de pollo',1000,'congelador',90],['Choclo congelado',500,'congelador'],['Arvejas congeladas',250,'congelador'],
+   ['Papel higiénico',4,'despensa'],['Lavalozas',300,'despensa'],['Pasta de dientes',1,'despensa'],['Jabón',2,'despensa'],['Cloro',1000,'despensa']
+  ].forEach(([n,q,loc,e])=>s.pantry.push({id:uid(),pid:id[n],qty:q,loc,exp:e!=null?addDays(t,e):null,upd:Date.now()}));
+  // [nombre, porciones, etiquetas, días desde la última vez (null = nunca), ingredientes, pasos]
+  const recs=[
+    ['Cazuela de vacuno',4,['tradicional','carne'],20,[['Carne de vacuno para cazuela',800],['Papa',600],['Zapallo camote',400],['Choclo congelado',300],['Porotos verdes',200],['Arroz',100],['Cebolla',150],['Zanahoria',150],['Cilantro',1]],'Hervir la carne con cebolla y zanahoria 1 hora. Agregar papas y zapallo. A los 15 min, choclo, porotos verdes y arroz. Terminar con cilantro.'],
+    ['Porotos con riendas',4,['tradicional','vegetariana','legumbres'],6,[['Porotos',500],['Tallarines',200],['Zapallo camote',300],['Cebolla',150],['Pimentón',1],['Aceite',30]],'Remojar los porotos la noche anterior. Cocer 1 hora con zapallo. Sofreír cebolla y pimentón, agregar. Al final, los tallarines quebrados.'],
+    ['Charquicán',4,['tradicional','carne'],30,[['Carne molida',500],['Papa',800],['Zapallo camote',400],['Choclo congelado',200],['Arvejas congeladas',200],['Cebolla',150],['Huevos',4]],'Sofreír cebolla y carne. Agregar papas y zapallo picados con agua; cocer y moler a medias. Sumar choclo y arvejas. Servir con huevo frito.'],
+    ['Pollo arvejado',4,['pollo'],10,[['Trutro de pollo',1000],['Arvejas congeladas',300],['Zanahoria',200],['Cebolla',150],['Arroz',300],['Aceite',30]],'Dorar el pollo, sofreír cebolla y zanahoria, agregar agua y cocer 30 min. Sumar arvejas 10 min. Servir con arroz.'],
+    ['Lentejas guisadas',4,['vegetariana','legumbres'],16,[['Lentejas',400],['Arroz',150],['Zapallo camote',200],['Zanahoria',100],['Cebolla',150],['Pimentón',1]],'Sofreír cebolla, pimentón y zanahoria. Agregar lentejas, zapallo y agua; cocer 30 min. Sumar el arroz los últimos 15 min.'],
+    ['Tallarines con salsa boloñesa',4,['rápida','carne'],3,[['Tallarines',400],['Carne molida',500],['Salsa de tomate',400],['Cebolla',150],['Zanahoria',100]],'Sofreír cebolla y zanahoria rallada, agregar la carne y luego la salsa. Cocer 20 min. Servir sobre los tallarines.'],
+    ['Merluza frita con puré',4,['pescado'],25,[['Merluza',600],['Papa',1000],['Leche',200],['Mantequilla',30],['Harina',100],['Huevos',2],['Aceite',300]],'Pasar la merluza por harina y huevo y freír. Cocer las papas y molerlas con leche y mantequilla.'],
+    ['Salmón al horno con ensalada',4,['pescado','rápida'],null,[['Salmón',600],['Limón',100],['Lechuga',1],['Tomate',400],['Arroz',250]],'Hornear el salmón con limón y sal 18 min a 200 °C. Ensalada de lechuga y tomate. Arroz graneado.'],
+    ['Arroz con pollo',4,['pollo','rápida'],9,[['Pechuga de pollo',600],['Arroz',400],['Arvejas congeladas',150],['Zanahoria',150],['Pimentón',1],['Cebolla',150]],'Dorar el pollo en cubos, sofreír verduras, agregar arroz y el doble de agua caliente. Cocer tapado 18 min.'],
+    ['Tortilla de zapallo italiano',4,['vegetariana','rápida'],40,[['Zapallo italiano',3],['Huevos',6],['Cebolla',150],['Tomate',400]],'Saltear zapallo y cebolla, agregar los huevos batidos y cuajar por ambos lados. Acompañar con ensalada de tomate.'],
+    ['Pastel de choclo',4,['tradicional','horno'],null,[['Choclo congelado',1000],['Carne molida',500],['Trutro de pollo',500],['Cebolla',300],['Huevos',2],['Albahaca',1],['Leche',200],['Azúcar',30]],'Pino de carne y cebolla; pollo cocido. Moler el choclo con leche y albahaca y espesar. Armar en fuente con huevo duro, cubrir con pastelera y azúcar. Hornear 30 min.']
+  ];
+  recs.forEach(([name,serv,tags,ago,ings,steps])=>s.recipes.push({id:uid(),name,serv,tags,steps,last:ago==null?null:addDays(t,-ago),ings:ings.map(([n,q])=>({pid:id[n],qty:q}))}));
+  s.settings.seeded=true;
+  return s;
+}
+
+/* ============ Acciones ============ */
+const ACT={
+  nav:d=>{ui.view=d.v;ui.sub=null;closeSheet();render();scrollTo(0,0)},
+  sub:d=>{ui.sub=d.v;render();scrollTo(0,0)},
+  back:()=>{ui.sub=null;render()},
+  closeSheet:()=>closeSheet(),
+  seed:()=>{const go=()=>{const lb=S.settings.lastBackup;S=seedData();S.settings.lastBackup=lb;commit();toast('Datos de ejemplo cargados')};if(S.products.length)ask('Esto reemplaza todos tus datos por los de ejemplo.','Reemplazar',go);else go()},
+  blank:()=>{S.settings.seeded=true;commit()},
+  wipe:()=>ask('Se borran todos los datos de la app. No se puede deshacer, salvo que tengas un respaldo.','Borrar todo',()=>{S=emptyState();S.settings.seeded=true;commit();toast('Datos borrados')}),
+  export:()=>exportData(),
+  import:()=>$('#importFile').click(),
+  // Despensa
+  loc:d=>{ui.loc=d.v;render()},
+  toggleOut:()=>{ui.showOut=!ui.showOut;render()},
+  inc:d=>{const it=S.pantry.find(i=>i.id===d.id);it.qty=rnd((it.qty||0)+stepOf(P(it.pid)));it.upd=Date.now();commit()},
+  dec:d=>{const it=S.pantry.find(i=>i.id===d.id);it.qty=Math.max(0,rnd((it.qty||0)-stepOf(P(it.pid))));it.upd=Date.now();commit()},
+  out:d=>{const it=S.pantry.find(i=>i.id===d.id);it.qty=0;it.upd=Date.now();commit();toast(P(it.pid)?.name+': se acabó')},
+  newItem:()=>sheetProduct({}),
+  editItem:d=>{const it=S.pantry.find(i=>i.id===d.id);if(it)sheetProduct({pid:it.pid,iid:it.id})},
+  editProd:d=>sheetProduct({pid:d.id,withItem:false}),
+  newProd:()=>sheetProduct({withItem:false}),
+  prodToPantry:()=>{const pid=ctx.pid;sheetProduct({pid,withItem:true})},
+  saveProduct:()=>{
+    const f=$('#sf'),g=n=>f.elements[n]?.value??'';
+    const name=g('name').trim();if(!name)return toast('Falta el nombre');
+    let p=ctx.pid?P(ctx.pid):findProd(name);
+    const other=findProd(name);if(p&&other&&other.id!==p.id)return toast('Ya existe otro producto con ese nombre');
+    const unit=g('unit');
+    if(p&&p.unit!==unit&&(S.pantry.some(i=>i.pid===p.id&&i.qty>0)||S.recipes.some(r=>r.ings.some(x=>x.pid===p.id))))toast('Ojo: cambiar la unidad no convierte cantidades ya registradas');
+    if(!p){p={id:uid()};S.products.push(p)}
+    Object.assign(p,{name,cat:g('cat'),unit,min:readQty(f,'min'),pack:readQty(f,'pack'),price:Math.max(0,Math.round(+g('price')||0))});
+    if(ctx.withItem){
+      const qty=readQty(f,'qty'),loc=g('loc'),exp=g('exp')||null;
+      let it=ctx.iid?S.pantry.find(i=>i.id===ctx.iid):null;
+      if(it)Object.assign(it,{qty,loc,exp,upd:Date.now()});
+      else{it=S.pantry.find(i=>i.pid===p.id&&i.loc===loc);
+        if(it){it.qty=rnd((it.qty||0)+qty);if(exp)it.exp=exp;it.upd=Date.now()}
+        else S.pantry.push({id:uid(),pid:p.id,qty,loc,exp,upd:Date.now()})}
+    }
+    closeSheet();commit();toast('Guardado');
+  },
+  delItem:()=>{S.pantry=S.pantry.filter(i=>i.id!==ctx.iid);closeSheet();commit()},
+  delProd:()=>{const p=P(ctx.pid);if(!p)return;
+    const used=S.recipes.filter(r=>r.ings.some(g=>g.pid===p.id));
+    if(used.length)return toast('Se usa en: '+used.map(r=>r.name).join(', '));
+    ask('Se elimina '+p.name+' del catálogo y de la despensa.','Eliminar',()=>{
+    S.products=S.products.filter(x=>x.id!==p.id);S.pantry=S.pantry.filter(i=>i.pid!==p.id);S.lists.forEach(l=>{if(l.status==='abierta')l.items=l.items.filter(i=>i.pid!==p.id)});
+    commit()})},
+  // Plan
+  wk:d=>{const n=+d.n;ui.week=n===0?monday(todayStr()):addDays(ui.week,n);render()},
+  suggest:()=>suggestWeek(),
+  slot:d=>{const m=mealAt(d.d,d.t);if(m)sheetMeal(m.id);else sheetPick(d.d,d.t)},
+  pick:d=>{const r=R(d.id);if(!r)return;
+    if(ctx.mid){const m=S.plan.find(x=>x.id===ctx.mid);if(m){m.rid=r.id;m.serv=defaultServ(r)}}
+    else S.plan.push({id:uid(),date:ctx.date,type:ctx.ty,rid:r.id,serv:defaultServ(r),status:'planificada'});
+    closeSheet();commit()},
+  newRecipeFromPick:()=>{closeSheet();ui.view='mas';ui.sub='recetas';render();sheetRecipe()},
+  serv:d=>{const m=S.plan.find(x=>x.id===ctx.mid);if(!m)return;m.serv=Math.max(1,m.serv+(+d.n));save();render();sheetMeal(m.id)},
+  cook:()=>{const m=S.plan.find(x=>x.id===ctx.mid);const miss=cookMeal(m);closeSheet();commit();toast(miss.length?'Descontado. Faltaba en despensa: '+miss.join(', '):'Ingredientes descontados de la despensa')},
+  uncook:()=>{const m=S.plan.find(x=>x.id===ctx.mid);uncookMeal(m);closeSheet();commit();toast('Ingredientes devueltos a la despensa')},
+  skip:()=>{const m=S.plan.find(x=>x.id===ctx.mid);m.status='saltada';closeSheet();commit()},
+  unskip:()=>{const m=S.plan.find(x=>x.id===ctx.mid);m.status='planificada';closeSheet();commit()},
+  change:()=>{const m=S.plan.find(x=>x.id===ctx.mid);sheetPick(m.date,m.type,m.id)},
+  rmMeal:()=>{S.plan=S.plan.filter(x=>x.id!==ctx.mid);closeSheet();commit()},
+  // Recetas
+  rtag:d=>{ui.rtag=d.v;render()},
+  editRecipe:d=>sheetRecipe(d.id),
+  addIng:()=>{$('#ings').insertAdjacentHTML('beforeend',ingRow());const ins=$('#ings').querySelectorAll('.in-n');ins[ins.length-1].focus()},
+  rmIng:(d,el)=>el.closest('.ing').remove(),
+  saveRecipe:()=>{
+    const f=$('#sf');const name=f.elements.name.value.trim();if(!name)return toast('Falta el nombre');
+    const serv=Math.max(1,parseInt(f.elements.serv.value)||1);
+    const rows=[...document.querySelectorAll('#ings .ing')].map(r=>({n:r.querySelector('.in-n').value.trim(),q:parseFloat(String(r.querySelector('.in-q').value).replace(',','.')),u:r.querySelector('.in-u').value})).filter(x=>x.n);
+    for(const x of rows){if(!(x.q>0))return toast('Falta la cantidad de '+x.n);const p=findProd(x.n);if(p&&p.unit!==SUB[x.u].base)return toast(`${p.name} se mide en ${UNITS[p.unit]}, no en ${SUB_LABEL[x.u]}`)}
+    const ings=[];
+    for(const x of rows){const p=ensureProduct(x.n,SUB[x.u].base,'Otros');const q=rnd(x.q*SUB[x.u].f);const ex=ings.find(g=>g.pid===p.id);if(ex)ex.qty=rnd(ex.qty+q);else ings.push({pid:p.id,qty:q})}
+    let r=ctx.rid?R(ctx.rid):null;
+    if(!r){r={id:uid(),last:null};S.recipes.push(r)}
+    Object.assign(r,{name,serv,tags:f.elements.tags.value.split(',').map(s=>s.trim().toLowerCase()).filter(Boolean),steps:f.elements.steps.value,ings});
+    closeSheet();commit();toast('Receta guardada');
+  },
+  delRecipe:()=>{const r=R(ctx.rid);if(!r)return;const n=S.plan.filter(m=>m.rid===r.id).length;
+    ask(`Se elimina “${r.name}”.${n?` También se quitan ${n} comidas del plan que la usan.`:''}`,'Eliminar',()=>{
+    S.recipes=S.recipes.filter(x=>x.id!==r.id);S.plan=S.plan.filter(m=>m.rid!==r.id);commit()})},
+  // Lista
+  genList:()=>{const l=generateList(ui.lfrom||todayStr(),ui.lweeks||4);commit();toast(l.items.length+' ítems en la lista')},
+  emptyList:()=>{const f=todayStr();S.lists.push({id:uid(),created:f,from:f,to:addDays(f,27),status:'abierta',total:0,items:[]});commit()},
+  buy:d=>{const i=openList().items.find(x=>x.id===d.id);i.bought=!i.bought;commit()},
+  editLItem:d=>sheetLItem(d.id),
+  saveLItem:()=>{const f=$('#sf');const i=openList().items.find(x=>x.id===ctx.id);i.qty=readQty(f,'qty');i.price=Math.max(0,Math.round(+f.elements.price.value||0));closeSheet();commit()},
+  delLItem:()=>{const ol=openList();ol.items=ol.items.filter(x=>x.id!==ctx.id);closeSheet();commit()},
+  addLItem:()=>sheetAddLItem(),
+  saveAddL:()=>{const f=$('#sf');const name=f.elements.name.value.trim();if(!name)return toast('Falta el producto');
+    const u=f.elements.qty_u.value;const base=SUB[u].base;const ex=findProd(name);
+    if(ex&&ex.unit!==base)return toast(`${ex.name} se mide en ${UNITS[ex.unit]}`);
+    const p=ensureProduct(name,base,f.elements.cat.value);const q=readQty(f,'qty')||1;
+    const ol=openList();const it=ol.items.find(i=>i.pid===p.id);
+    if(it)it.qty=rnd(it.qty+q);else ol.items.push({id:uid(),pid:p.id,qty:q,origin:'manual',bought:false,price:0});
+    closeSheet();commit()},
+  closeList:()=>{const ol=openList();const b=ol.items.filter(i=>i.bought).length;
+    ask(`Se sumarán ${b} ítems comprados a la despensa${ol.items.length-b?` (${ol.items.length-b} sin marcar quedan fuera)`:''}.`,'Cerrar compra',()=>{
+    const n=closeListNow();commit();toast(n+' productos sumados a la despensa')})},
+  discardList:()=>ask('Se descarta la lista abierta. La despensa no cambia.','Descartar',()=>{const ol=openList();S.lists=S.lists.filter(l=>l!==ol);commit()}),
+  askYes:()=>{const fn=ctx.askFn;closeSheet();if(fn)fn()},
+};
+const CH={
+  lfrom:el=>{ui.lfrom=el.value||todayStr();render()},
+  lweeks:el=>{ui.lweeks=+el.value;render()},
+  defserv:el=>{const v=parseInt(el.value);S.settings.serv=v>0?v:null;commit()},
+  unitChange:el=>{const base=el.value;document.querySelectorAll('#sf .uq select').forEach(s=>{s.innerHTML=subOpts(base,base)})},
+  pickProdName:el=>{const p=findProd(el.value);if(p&&!ctx.pid)sheetProduct({pid:p.id,withItem:true})},
+  addlName:el=>{const p=findProd(el.value);if(!p)return;const f=$('#sf');f.elements.qty_u.value=p.unit;f.elements.cat.value=p.cat;if(p.pack){const sub=pickSub(p.unit,p.pack);f.elements.qty_u.value=sub;f.elements.qty.value=rnd(p.pack/SUB[sub].f)}},
+};
+
+document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el)return;const fn=ACT[el.dataset.act];if(fn){e.preventDefault();fn(el.dataset,el,e)}});
+document.addEventListener('input',e=>{const el=e.target;
+  if(el.dataset.in){ui[el.dataset.in]=el.value;render();return}
+  if(el.id==='pickq'){const q=norm(el.value);document.querySelectorAll('.pk').forEach(b=>b.style.display=!q||b.dataset.n.includes(q)?'':'none')}
+});
+document.addEventListener('change',e=>{const el=e.target;
+  if(el.dataset.ch&&CH[el.dataset.ch]){CH[el.dataset.ch](el);return}
+  if(el.classList.contains('in-n')){const p=findProd(el.value);if(p){const s=el.parentNode.querySelector('.in-u');if(SUB[s.value].base!==p.unit)s.value=p.unit}}
+});
+$('#importFile').addEventListener('change',e=>{const f=e.target.files[0];if(f)importData(f);e.target.value=''});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&saveT)flush()});
+window.addEventListener('pagehide',()=>{if(saveT)flush()});
+
+(async()=>{
+  const s=await load();S=migrate(s);render();
+  try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+  if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+})();
+</script>
+</body>
+</html>
